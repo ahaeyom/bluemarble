@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>온라인 부루마블</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="game"></div>
+    <aside id="lobby">
+      <h1>온라인 부루마블</h1>
+      <section id="join-form">
+        <label>이름 <input id="name" maxlength="12" placeholder="닉네임" /></label>
+        <button id="create">방 만들기</button>
+        <div class="row">
+          <input id="code" maxlength="4" placeholder="방 코드" />
+          <button id="join">참가</button>
+        </div>
+        <p id="error" class="error"></p>
+      </section>
+      <section id="room" hidden>
+        <p>방 코드 <strong id="room-code"></strong></p>
+        <button id="copy-link">초대 링크 복사</button>
+        <ul id="players"></ul>
+        <p class="hint">게임 진행은 2~3단계에서 붙일 예정이에요.</p>
+      </section>
+    </aside>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

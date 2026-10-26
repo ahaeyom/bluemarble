@@ -1,0 +1,20 @@
+{
+  "name": "@bluemarble/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@bluemarble/shared": "*",
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1",
+    "tsx": "^4.20.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.0.0"
+  }
+}
