@@ -14,15 +14,28 @@ body {
 }
 #game { width: min(100%, 720px); aspect-ratio: 1; }
 #game canvas { width: 100% !important; height: auto !important; border-radius: 12px; }
-#lobby { width: min(100%, 280px); background: #273445; border-radius: 12px; padding: 16px; }
+#side { width: min(100%, 320px); background: #273445; border-radius: 12px; padding: 16px; }
 h1 { font-size: 20px; margin: 0 0 16px; }
-label, input, button { display: block; width: 100%; font-size: 15px; }
-input { margin-top: 4px; padding: 8px; border-radius: 6px; border: 1px solid #4a5b70; background: #1d2733; color: inherit; }
-button { margin-top: 8px; padding: 9px; border: 0; border-radius: 6px; background: #e8a33d; color: #1d2733; font-weight: 700; cursor: pointer; }
+h2 { font-size: 14px; color: #9fb0c3; margin: 16px 0 4px; }
+label, input, button, select { display: block; width: 100%; font-size: 15px; }
+input, select { margin-top: 6px; padding: 8px; border-radius: 6px; border: 1px solid #4a5b70; background: #1d2733; color: inherit; }
+button { margin-top: 8px; padding: 10px; border: 0; border-radius: 6px; background: #e8a33d; color: #1d2733; font-weight: 700; cursor: pointer; }
+button.secondary { background: #4a5b70; color: #f4f1e8; }
+button:disabled { opacity: 0.5; cursor: default; }
 .row { display: flex; gap: 8px; margin-top: 8px; }
 .row input, .row button { margin-top: 0; }
 .error { color: #ff8a80; min-height: 1em; }
 .hint { color: #9fb0c3; font-size: 13px; }
-#players { list-style: none; padding: 0; }
-#players li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-.dot { width: 12px; height: 12px; border-radius: 50%; }
+ul.plain { list-style: none; padding: 0; margin: 12px 0 0; }
+ul.plain li { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+#turn-info { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+#turn-info + #actions .hint { margin: 6px 0 0; }
+#scoreboard li { justify-content: space-between; border-bottom: 1px solid #344458; }
+#scoreboard li.current { font-weight: 700; }
+#scoreboard li.bankrupt { opacity: 0.4; text-decoration: line-through; }
+#scoreboard .who { display: flex; align-items: center; gap: 8px; }
+#scoreboard .money { font-variant-numeric: tabular-nums; }
+#log { max-height: 220px; overflow-y: auto; padding-left: 0; list-style: none; margin: 0; font-size: 13px; color: #c9d4e0; }
+#log li { padding: 3px 0; border-bottom: 1px dashed #344458; }
+.sell-list button { display: flex; justify-content: space-between; }

@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { io, type Socket } from 'socket.io-client';
-import type { ClientToServerEvents, RoomInfo, ServerToClientEvents } from '@bluemarble/shared';
+import { GameError, applyAction, createGame, type GameAction, type GameState } from '@bluemarble/shared';
 import { BOARD_PX, BoardScene } from './BoardScene';
+import { GamePanel } from './GamePanel';
+import { setupOnline } from './online';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -11,52 +12,74 @@ new Phaser.Game({
   scene: [BoardScene],
 });
 
-const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io();
-
+const PLAYER_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6'];
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-const nameInput = $<HTMLInputElement>('name');
-const codeInput = $<HTMLInputElement>('code');
-const errorText = $('error');
 
-// 초대 링크(?room=ABCD)로 들어오면 방 코드를 미리 채운다.
-const invited = new URLSearchParams(location.search).get('room');
-if (invited) codeInput.value = invited;
-
-function showRoom(room: RoomInfo) {
-  $('join-form').hidden = true;
-  $('room').hidden = false;
-  $('room-code').textContent = room.code;
-  const list = $('players');
-  list.replaceChildren(
-    ...room.players.map((p) => {
-      const li = document.createElement('li');
-      const dot = document.createElement('span');
-      dot.className = 'dot';
-      dot.style.background = p.color;
-      li.append(dot, `${p.name}${p.isHost ? ' (방장)' : ''}${p.id === socket.id ? ' · 나' : ''}`);
-      return li;
-    }),
-  );
+function show(section: string) {
+  for (const id of ['menu', 'local-setup', 'online', 'game-panel']) $(id).hidden = id !== section;
 }
 
-$('create').onclick = () => {
-  socket.emit('createRoom', nameInput.value, (res) => {
-    if (res.ok) showRoom(res.data);
-    else errorText.textContent = res.error;
-  });
+// ---------- 한 화면 모드 ----------
+
+const nameBox = $('local-names');
+PLAYER_COLORS.forEach((_, i) => {
+  const input = document.createElement('input');
+  input.maxLength = 12;
+  input.placeholder = `플레이어 ${i + 1}`;
+  if (i < 3) input.value = `플레이어 ${i + 1}`;
+  nameBox.append(input);
+});
+
+let state: GameState;
+let busy = false;
+const panel = new GamePanel(dispatch);
+
+async function dispatch(action: GameAction) {
+  if (busy) return;
+  let result;
+  try {
+    result = applyAction(state, state.players[state.current].id, action);
+  } catch (err) {
+    if (err instanceof GameError) return panel.addLog([`⚠️ ${err.message}`]);
+    throw err;
+  }
+  busy = true;
+  panel.render(state, busy);
+  const scene = await BoardScene.ready;
+  await scene.play(result.events, result.state);
+  state = result.state;
+  panel.addLog(result.events.flatMap((e) => (e.type === 'log' ? [e.text] : [])));
+  busy = false;
+  panel.render(state, busy);
+  scene.markCurrent(state);
+}
+
+$('go-local').onclick = () => show('local-setup');
+$('go-online').onclick = () => {
+  show('online');
+  setupOnline();
 };
 
-$('join').onclick = () => {
-  socket.emit('joinRoom', codeInput.value, nameInput.value, (res) => {
-    if (res.ok) showRoom(res.data);
-    else errorText.textContent = res.error;
-  });
+$('local-start').onclick = async () => {
+  const names = [...nameBox.querySelectorAll('input')].map((i) => i.value.trim()).filter(Boolean);
+  if (names.length < 2) {
+    $('local-error').textContent = '2명 이상 필요해요.';
+    return;
+  }
+  state = createGame(names.map((name, i) => ({ id: `p${i}`, name, color: PLAYER_COLORS[i] })));
+  show('game-panel');
+  panel.addLog([`게임 시작! 순서: ${state.players.map((p) => p.name).join(' → ')}`]);
+  panel.render(state, busy);
+  const scene = await BoardScene.ready;
+  scene.sync(state);
+  scene.markCurrent(state);
+  scene.onTileClick = (tile) => {
+    if (state.phase.type === 'spaceTravel') dispatch({ type: 'travel', to: tile });
+  };
 };
 
-$('copy-link').onclick = async () => {
-  const link = `${location.origin}/?room=${$('room-code').textContent}`;
-  await navigator.clipboard.writeText(link);
-  $('copy-link').textContent = '복사했어요!';
-};
-
-socket.on('roomUpdated', showRoom);
+// 초대 링크로 들어오면 바로 온라인 화면을 연다.
+if (new URLSearchParams(location.search).has('room')) {
+  show('online');
+  setupOnline();
+}

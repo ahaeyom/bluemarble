@@ -14,4 +14,5 @@
 npm install
 npm run dev      # 개발: http://localhost:5173
 npm run build && npm start   # 배포와 같은 방식: http://localhost:3000
+npm run test -w shared       # 규칙 엔진 자동 대전 3,000판
 ```

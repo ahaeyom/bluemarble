@@ -8,22 +8,45 @@
   </head>
   <body>
     <div id="game"></div>
-    <aside id="lobby">
+    <aside id="side">
       <h1>온라인 부루마블</h1>
-      <section id="join-form">
-        <label>이름 <input id="name" maxlength="12" placeholder="닉네임" /></label>
-        <button id="create">방 만들기</button>
-        <div class="row">
-          <input id="code" maxlength="4" placeholder="방 코드" />
-          <button id="join">참가</button>
-        </div>
-        <p id="error" class="error"></p>
+
+      <section id="menu">
+        <button id="go-local">한 화면에서 하기</button>
+        <button id="go-online" class="secondary">온라인 방 (준비 중)</button>
       </section>
-      <section id="room" hidden>
-        <p>방 코드 <strong id="room-code"></strong></p>
-        <button id="copy-link">초대 링크 복사</button>
-        <ul id="players"></ul>
-        <p class="hint">게임 진행은 2~3단계에서 붙일 예정이에요.</p>
+
+      <section id="local-setup" hidden>
+        <p class="hint">2~5명 이름을 적어 주세요. 빈 칸은 빠져요.</p>
+        <div id="local-names"></div>
+        <button id="local-start">게임 시작</button>
+        <p class="error" id="local-error"></p>
+      </section>
+
+      <section id="online" hidden>
+        <section id="join-form">
+          <label>이름 <input id="name" maxlength="12" placeholder="닉네임" /></label>
+          <button id="create">방 만들기</button>
+          <div class="row">
+            <input id="code" maxlength="4" placeholder="방 코드" />
+            <button id="join">참가</button>
+          </div>
+          <p id="error" class="error"></p>
+        </section>
+        <section id="room" hidden>
+          <p>방 코드 <strong id="room-code"></strong></p>
+          <button id="copy-link">초대 링크 복사</button>
+          <ul id="players" class="plain"></ul>
+          <p class="hint">온라인 게임 진행은 3단계에서 붙일 예정이에요.</p>
+        </section>
+      </section>
+
+      <section id="game-panel" hidden>
+        <div id="turn-info"></div>
+        <div id="actions"></div>
+        <ul id="scoreboard" class="plain"></ul>
+        <h2>기록</h2>
+        <ol id="log"></ol>
       </section>
     </aside>
     <script type="module" src="/src/main.ts"></script>
