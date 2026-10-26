@@ -23,14 +23,40 @@ function dot(color: string) {
   return d;
 }
 
+export interface PanelOptions {
+  busy: boolean;
+  /** 이 화면의 플레이어. 한 화면 모드에서는 null이고, 모두가 조작할 수 있다. */
+  myId: string | null;
+  /** 접속이 끊긴 플레이어 */
+  offline: Set<string>;
+  /** 지금 차례가 자동으로 넘어가는 시각 (이 브라우저 시계 기준) */
+  deadline: number | null;
+}
+
 /** 오른쪽 패널: 차례, 행동 버튼, 플레이어 현황, 기록 */
 export class GamePanel {
-  constructor(private act: (action: GameAction) => void) {}
+  private deadline: number | null = null;
 
-  render(state: GameState, busy: boolean) {
+  constructor(private act: (action: GameAction) => void) {
+    setInterval(() => this.renderTimer(), 250);
+  }
+
+  render(state: GameState, opts: PanelOptions) {
+    this.deadline = state.phase.type === 'gameOver' ? null : opts.deadline;
     this.renderTurn(state);
-    this.renderActions(state, busy);
-    this.renderScores(state);
+    this.renderTimer();
+    const p = state.players[state.current];
+    if (opts.myId && p.id !== opts.myId && state.phase.type !== 'gameOver') {
+      $('actions').replaceChildren(el('p', { className: 'hint', textContent: `${p.name}님이 고르는 중이에요…` }));
+    } else {
+      this.renderActions(state, opts.busy);
+    }
+    this.renderScores(state, opts);
+  }
+
+  private renderTimer() {
+    const left = this.deadline ? Math.max(0, Math.ceil((this.deadline - Date.now()) / 1000)) : null;
+    $('timer').textContent = left === null ? '' : `⏱ ${left}초`;
   }
 
   addLog(lines: string[]) {
@@ -119,7 +145,7 @@ export class GamePanel {
     }
   }
 
-  private renderScores(state: GameState) {
+  private renderScores(state: GameState, opts: PanelOptions) {
     $('scoreboard').replaceChildren(
       ...state.players.map((p, i) => {
         const owned = state.properties.filter((prop) => prop?.owner === p.id).length;
@@ -133,7 +159,12 @@ export class GamePanel {
         const li = el(
           'li',
           {},
-          el('span', { className: 'who' }, dot(p.color), `${p.name} ${badges}`),
+          el(
+            'span',
+            { className: 'who' },
+            dot(p.color),
+            `${p.name}${p.id === opts.myId ? ' (나)' : ''}${opts.offline.has(p.id) ? ' 📴' : ''} ${badges}`,
+          ),
           el('span', { className: 'money' }, `${p.money}만 · 땅 ${owned}`),
         );
         if (i === state.current && state.phase.type !== 'gameOver') li.classList.add('current');

@@ -39,3 +39,5 @@ ul.plain li { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
 #log { max-height: 220px; overflow-y: auto; padding-left: 0; list-style: none; margin: 0; font-size: 13px; color: #c9d4e0; }
 #log li { padding: 3px 0; border-bottom: 1px dashed #344458; }
 .sell-list button { display: flex; justify-content: space-between; }
+.turn-row { display: flex; justify-content: space-between; align-items: center; }
+#timer { color: #e8a33d; font-variant-numeric: tabular-nums; }

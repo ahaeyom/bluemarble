@@ -1,7 +1,11 @@
 {
   "name": "bluemarble",
   "private": true,
-  "workspaces": ["shared", "server", "client"],
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
   "scripts": {
     "dev": "concurrently -n server,client \"npm run dev -w server\" \"npm run dev -w client\"",
     "build": "npm run build -w client",
@@ -11,5 +15,8 @@
   "devDependencies": {
     "concurrently": "^9.2.1",
     "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

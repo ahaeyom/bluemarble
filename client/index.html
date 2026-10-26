@@ -13,7 +13,7 @@
 
       <section id="menu">
         <button id="go-local">한 화면에서 하기</button>
-        <button id="go-online" class="secondary">온라인 방 (준비 중)</button>
+        <button id="go-online">온라인으로 하기</button>
       </section>
 
       <section id="local-setup" hidden>
@@ -37,12 +37,14 @@
           <p>방 코드 <strong id="room-code"></strong></p>
           <button id="copy-link">초대 링크 복사</button>
           <ul id="players" class="plain"></ul>
-          <p class="hint">온라인 게임 진행은 3단계에서 붙일 예정이에요.</p>
+          <button id="start-online">게임 시작</button>
+          <p class="hint" id="room-hint"></p>
+          <p class="error" id="room-error"></p>
         </section>
       </section>
 
       <section id="game-panel" hidden>
-        <div id="turn-info"></div>
+        <div class="turn-row"><div id="turn-info"></div><span id="timer"></span></div>
         <div id="actions"></div>
         <ul id="scoreboard" class="plain"></ul>
         <h2>기록</h2>

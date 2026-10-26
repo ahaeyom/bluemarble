@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { GameError, applyAction, createGame, type GameAction, type GameState } from '@bluemarble/shared';
+import { GameError, applyAction, createGame, type GameState } from '@bluemarble/shared';
 import { BOARD_PX, BoardScene } from './BoardScene';
-import { GamePanel } from './GamePanel';
+import { GameView } from './GameView';
 import { setupOnline } from './online';
 
 new Phaser.Game({
@@ -30,56 +30,43 @@ PLAYER_COLORS.forEach((_, i) => {
   nameBox.append(input);
 });
 
-let state: GameState;
-let busy = false;
-const panel = new GamePanel(dispatch);
-
-async function dispatch(action: GameAction) {
-  if (busy) return;
-  let result;
-  try {
-    result = applyAction(state, state.players[state.current].id, action);
-  } catch (err) {
-    if (err instanceof GameError) return panel.addLog([`⚠️ ${err.message}`]);
-    throw err;
-  }
-  busy = true;
-  panel.render(state, busy);
-  const scene = await BoardScene.ready;
-  await scene.play(result.events, result.state);
-  state = result.state;
-  panel.addLog(result.events.flatMap((e) => (e.type === 'log' ? [e.text] : [])));
-  busy = false;
-  panel.render(state, busy);
-  scene.markCurrent(state);
+function startLocal(names: string[]) {
+  let state: GameState = createGame(names.map((name, i) => ({ id: `p${i}`, name, color: PLAYER_COLORS[i] })));
+  const view = new GameView((action) => {
+    try {
+      const result = applyAction(state, state.players[state.current].id, action);
+      state = result.state;
+      view.update(result.state, result.events);
+    } catch (err) {
+      if (err instanceof GameError) view.log(`⚠️ ${err.message}`);
+      else throw err;
+    }
+  }, null);
+  show('game-panel');
+  view.update(state, [{ type: 'log', text: `게임 시작! 순서: ${state.players.map((p) => p.name).join(' → ')}` }]);
 }
 
 $('go-local').onclick = () => show('local-setup');
-$('go-online').onclick = () => {
-  show('online');
-  setupOnline();
-};
 
-$('local-start').onclick = async () => {
+$('local-start').onclick = () => {
   const names = [...nameBox.querySelectorAll('input')].map((i) => i.value.trim()).filter(Boolean);
   if (names.length < 2) {
     $('local-error').textContent = '2명 이상 필요해요.';
     return;
   }
-  state = createGame(names.map((name, i) => ({ id: `p${i}`, name, color: PLAYER_COLORS[i] })));
-  show('game-panel');
-  panel.addLog([`게임 시작! 순서: ${state.players.map((p) => p.name).join(' → ')}`]);
-  panel.render(state, busy);
-  const scene = await BoardScene.ready;
-  scene.sync(state);
-  scene.markCurrent(state);
-  scene.onTileClick = (tile) => {
-    if (state.phase.type === 'spaceTravel') dispatch({ type: 'travel', to: tile });
-  };
+  startLocal(names);
 };
 
-// 초대 링크로 들어오면 바로 온라인 화면을 연다.
-if (new URLSearchParams(location.search).has('room')) {
+// ---------- 온라인 모드 ----------
+
+let online = false;
+function goOnline() {
   show('online');
-  setupOnline();
+  if (!online) setupOnline(show);
+  online = true;
 }
+
+$('go-online').onclick = goOnline;
+
+// 초대 링크로 들어오면 바로 온라인 화면을 연다.
+if (new URLSearchParams(location.search).has('room')) goOnline();
